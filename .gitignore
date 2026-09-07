@@ -1,0 +1,24 @@
+# Python virtual environments
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Large/generated data
+*.tar.gz
+*.zip
+emotion_results.png
+
+# Local datasets and model artifacts
+data/
+
+# Node / Expo
+mobile_app/node_modules/
+mobile_app/.expo/
+mobile_app/dist/
+mobile_app/.cache/
+
+# macOS
+.DS_Store
+**/.DS_Store

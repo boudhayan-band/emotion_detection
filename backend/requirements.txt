@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+python-multipart
+numpy
+opencv-python
+matplotlib
+facenet-pytorch
+emotiefflib[torch]
+gdown
