@@ -119,9 +119,6 @@ export default function App() {
 
       const response = await fetch(`${API_BASE}/predict`, {
         method: 'POST',
-        headers: {
-          Accept: 'application/json',
-        },
         body: formData,
       });
 
