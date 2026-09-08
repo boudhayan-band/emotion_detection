@@ -119,18 +119,24 @@ export default function App() {
 
       const fileName = decodeURIComponent(selectedVideo.split('/').pop() || 'face_video.mp4');
       const mimeType = getMimeTypeFromUri(selectedVideo);
+      
+      // Create FormData using proper React Native-compatible approach
       const formData = new FormData();
-
-      formData.append('file', {
+      
+      // Append using the object format that React Native expects
+      const fileObject = {
         uri: selectedVideo,
         name: fileName,
         type: mimeType,
-      } as any);
+      };
+      
+      // Use the correct React Native FormData append method
+      (formData as any).append('file', fileObject);
 
       console.log('Uploading to:', `${API_BASE}/predict`);
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 90000); // 90 second timeout
 
       const response = await fetch(`${API_BASE}/predict`, {
         method: 'POST',
