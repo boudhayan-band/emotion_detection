@@ -1,15 +1,18 @@
 {
   "expo": {
-    "name": "mobile_app",
-    "slug": "mobile_app",
+    "name": "Emotion Generator",
+    "slug": "emotion-generator",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.boudhayan.emotiongenerator",
+      "buildNumber": "1"
     },
     "android": {
+      "package": "com.boudhayan.emotiongenerator",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -20,6 +23,11 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "e9f8a695-8272-4cfb-b7e5-56246be9ad6e"
+      }
     }
   }
 }

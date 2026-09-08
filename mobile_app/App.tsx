@@ -23,7 +23,7 @@ const DEFAULT_API_BASE =
 const API_BASE = process.env.EXPO_PUBLIC_API_URL || DEFAULT_API_BASE;
 
 export default function App() {
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<{
     emotion: string;
@@ -33,55 +33,73 @@ export default function App() {
   } | null>(null);
 
   const requestPermissions = async () => {
-    const mediaPermission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     const cameraPermission = await ImagePicker.requestCameraPermissionsAsync();
 
-    if (!mediaPermission.granted && !cameraPermission.granted) {
-      Alert.alert('Permission required', 'Camera or photo library access is required to analyze a face image.');
+    if (!cameraPermission.granted) {
+      Alert.alert('Permission required', 'Camera access is required to record a 5 second face video.');
       return false;
     }
 
     return true;
   };
 
-  const openImagePicker = async () => {
-    const hasPermission = await requestPermissions();
-    if (!hasPermission) {
-      return;
-    }
-
-    const response = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      quality: 1,
-      allowsEditing: true,
-    });
-
-    if (!response.canceled && response.assets?.[0]?.uri) {
-      setSelectedImage(response.assets[0].uri);
-      setResult(null);
-    }
-  };
-
-  const openCamera = async () => {
+  const openFrontCameraVideo = async () => {
     const hasPermission = await requestPermissions();
     if (!hasPermission) {
       return;
     }
 
     const response = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
+      mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+      cameraType: ImagePicker.CameraType.front,
       quality: 1,
+      videoMaxDuration: 5,
+      allowsEditing: false,
     });
 
     if (!response.canceled && response.assets?.[0]?.uri) {
-      setSelectedImage(response.assets[0].uri);
+      setSelectedVideo(response.assets[0].uri);
       setResult(null);
     }
   };
 
+  const pickVideoFromLibrary = async () => {
+    const hasPermission = await requestPermissions();
+    if (!hasPermission) {
+      return;
+    }
+
+    const response = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+      quality: 1,
+      allowsEditing: false,
+      selectionLimit: 1,
+    });
+
+    if (!response.canceled && response.assets?.[0]?.uri) {
+      setSelectedVideo(response.assets[0].uri);
+      setResult(null);
+    }
+  };
+
+  const getMimeTypeFromUri = (uri: string) => {
+    const fileName = decodeURIComponent(uri.split('/').pop() || 'clip.mp4');
+    const extension = fileName.split('.').pop()?.toLowerCase();
+
+    switch (extension) {
+      case 'mov':
+        return 'video/quicktime';
+      case 'webm':
+        return 'video/webm';
+      case 'mp4':
+      default:
+        return 'video/mp4';
+    }
+  };
+
   const analyzeEmotion = async () => {
-    if (!selectedImage) {
-      Alert.alert('No image selected', 'Choose or capture a face image before predicting the emotion.');
+    if (!selectedVideo) {
+      Alert.alert('No video selected', 'Record or choose a 5 second face video before generating the emotion.');
       return;
     }
 
@@ -89,16 +107,21 @@ export default function App() {
     setResult(null);
 
     try {
-      const filename = selectedImage.split('/').pop() || 'photo.jpg';
+      const fileName = decodeURIComponent(selectedVideo.split('/').pop() || 'face_video.mp4');
+      const mimeType = getMimeTypeFromUri(selectedVideo);
       const formData = new FormData();
+
       formData.append('file', {
-        uri: selectedImage,
-        name: filename,
-        type: 'image/jpeg',
+        uri: selectedVideo,
+        name: fileName,
+        type: mimeType,
       } as any);
 
       const response = await fetch(`${API_BASE}/predict`, {
         method: 'POST',
+        headers: {
+          Accept: 'application/json',
+        },
         body: formData,
       });
 
@@ -108,6 +131,15 @@ export default function App() {
         throw new Error(data?.detail || 'Prediction failed.');
       }
 
+      if (data.emotion === 'Unknown' && data.message?.toLowerCase().includes('face')) {
+        setResult({
+          emotion: 'Unknown',
+          confidence: 0,
+          message: 'No face was detected. Please record a clear front-facing video with your face visible for the full 5 seconds.',
+        });
+        return;
+      }
+
       setResult({
         emotion: data.emotion || 'Unknown',
         confidence: data.confidence ?? undefined,
@@ -115,7 +147,7 @@ export default function App() {
         fallback: Boolean(data.fallback),
       });
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unable to process the image.';
+      const message = error instanceof Error ? error.message : 'Unable to process the video.';
       setResult({
         emotion: 'Error',
         message,
@@ -130,29 +162,32 @@ export default function App() {
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.title}>Emotion Generator</Text>
-        <Text style={styles.subtitle}>Select a face image to detect the emotion.</Text>
+        <Text style={styles.subtitle}>Record a 5 second front-camera video and generate the emotion.</Text>
 
-        {selectedImage ? (
-          <Image source={{ uri: selectedImage }} style={styles.previewImage} resizeMode="cover" />
+        {selectedVideo ? (
+          <View style={styles.videoPreviewBox}>
+            <Text style={styles.videoLabel}>Selected video</Text>
+            <Text style={styles.videoName}>{selectedVideo.split('/').pop() || 'face_video.mp4'}</Text>
+          </View>
         ) : (
           <View style={styles.placeholder}>
-            <Text style={styles.placeholderText}>No image selected</Text>
+            <Text style={styles.placeholderText}>No video selected</Text>
           </View>
         )}
 
         <View style={styles.actionRow}>
-          <Button title="Choose Photo" onPress={openImagePicker} />
-          <Button title="Take Photo" onPress={openCamera} />
+          <Button title="Front Camera" onPress={openFrontCameraVideo} />
+          <Button title="Pick Video" onPress={pickVideoFromLibrary} />
         </View>
 
         <View style={styles.analyzeButton}>
-          <Button title={isLoading ? 'Analyzing...' : 'Generate Emotion'} onPress={analyzeEmotion} disabled={isLoading || !selectedImage} />
+          <Button title={isLoading ? 'Analyzing...' : 'Generate Emotion'} onPress={analyzeEmotion} disabled={isLoading || !selectedVideo} />
         </View>
 
         {isLoading ? (
           <View style={styles.loadingBox}>
             <ActivityIndicator size="large" color="#4f46e5" />
-            <Text style={styles.loadingText}>Analyzing image...</Text>
+            <Text style={styles.loadingText}>Processing 5 second video...</Text>
           </View>
         ) : null}
 
@@ -194,16 +229,29 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 18,
   },
-  previewImage: {
+  videoPreviewBox: {
     width: '100%',
-    height: 320,
+    minHeight: 120,
     borderRadius: 18,
-    backgroundColor: '#dfe7f5',
+    backgroundColor: '#e0e7ff',
+    padding: 18,
     marginBottom: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  videoLabel: {
+    color: '#4338ca',
+    fontWeight: '700',
+    marginBottom: 8,
+  },
+  videoName: {
+    color: '#111827',
+    fontSize: 14,
+    textAlign: 'center',
   },
   placeholder: {
     width: '100%',
-    height: 320,
+    height: 160,
     borderRadius: 18,
     borderWidth: 1,
     borderStyle: 'dashed',
