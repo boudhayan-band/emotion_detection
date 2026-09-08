@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -31,6 +31,13 @@ export default function App() {
     message?: string;
     fallback?: boolean;
   } | null>(null);
+
+  useEffect(() => {
+    console.log('=== App Started ===');
+    console.log('Platform:', Platform.OS);
+    console.log('API_BASE URL:', API_BASE);
+    console.log('Environment API URL:', process.env.EXPO_PUBLIC_API_URL);
+  }, []);
 
   const requestPermissions = async () => {
     const cameraPermission = await ImagePicker.requestCameraPermissionsAsync();
@@ -107,6 +114,9 @@ export default function App() {
     setResult(null);
 
     try {
+      console.log('API_BASE:', API_BASE);
+      console.log('Selected video:', selectedVideo);
+
       const fileName = decodeURIComponent(selectedVideo.split('/').pop() || 'face_video.mp4');
       const mimeType = getMimeTypeFromUri(selectedVideo);
       const formData = new FormData();
@@ -117,15 +127,26 @@ export default function App() {
         type: mimeType,
       } as any);
 
+      console.log('Uploading to:', `${API_BASE}/predict`);
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+
       const response = await fetch(`${API_BASE}/predict`, {
         method: 'POST',
         body: formData,
+        signal: controller.signal,
       });
 
+      clearTimeout(timeoutId);
+
+      console.log('Response status:', response.status);
+
       const data = await response.json();
+      console.log('Response data:', data);
 
       if (!response.ok) {
-        throw new Error(data?.detail || 'Prediction failed.');
+        throw new Error(data?.detail || `Prediction failed with status ${response.status}.`);
       }
 
       if (data.emotion === 'Unknown' && data.message?.toLowerCase().includes('face')) {
@@ -144,7 +165,15 @@ export default function App() {
         fallback: Boolean(data.fallback),
       });
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unable to process the video.';
+      let message = 'Unable to process the video.';
+      if (error instanceof Error) {
+        message = error.message;
+        console.error('Error details:', error);
+      } else if (error instanceof TypeError && error.message === 'Network request failed') {
+        message = `Network error: Cannot reach ${API_BASE}. Check your internet connection and that the API URL is correct.`;
+      }
+      
+      console.error('Full error:', error);
       setResult({
         emotion: 'Error',
         message,
