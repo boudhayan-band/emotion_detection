@@ -1,0 +1,110 @@
+Facial Emotion Recognition Project - Package Versions
+=====================================================
+
+Generated: 2026-09-09
+
+The Python versions below are the versions installed in backend/.venv.
+The mobile versions below are the versions resolved in mobile_app/package-lock.json.
+
+BACKEND (Python)
+----------------
+
+API dependencies from backend/requirements.txt:
+fastapi==0.128.8
+uvicorn==0.39.0
+python-multipart==0.0.20
+
+Inference and shared dependencies:
+numpy==2.0.2
+opencv-python==5.0.0.93
+matplotlib==3.9.4
+facenet-pytorch==2.5.3
+emotiefflib==1.1.1
+gdown==5.2.2
+
+Packages installed for the emotiefflib[torch] extra:
+torch==2.8.0
+torchvision==0.23.0
+
+Other resolved backend dependencies:
+annotated-doc==0.0.5
+annotated-types==0.7.0
+anyio==4.12.1
+beautifulsoup4==4.15.0
+certifi==2026.7.22
+charset-normalizer==3.5.1
+click==8.1.8
+coloredlogs==15.0.1
+contourpy==1.3.0
+cycler==0.12.1
+exceptiongroup==1.3.1
+filelock==3.19.1
+flatbuffers==25.12.19
+fonttools==4.60.2
+fsspec==2025.10.0
+h11==0.16.0
+hf-xet==1.6.0
+httpcore==1.0.9
+httpx==0.28.1
+huggingface_hub==1.8.0
+humanfriendly==10.0
+idna==3.19
+importlib_resources==6.5.2
+Jinja2==3.1.6
+kiwisolver==1.4.7
+markdown-it-py==3.0.0
+MarkupSafe==3.0.3
+mdurl==0.1.2
+ml_dtypes==0.5.4
+mpmath==1.3.0
+networkx==3.2.1
+onnx==1.19.1
+onnxruntime==1.19.2
+packaging==26.3
+pillow==11.3.0
+protobuf==6.33.6
+pydantic==2.13.5
+pydantic_core==2.46.5
+Pygments==2.21.0
+pyparsing==3.3.2
+PySocks==1.7.1
+python-dateutil==2.9.0.post0
+python-dotenv==1.2.1
+PyYAML==6.0.3
+requests==2.32.5
+rich==15.0.0
+safetensors==0.7.0
+shellingham==1.5.4
+six==1.17.0
+soupsieve==2.8.4
+starlette==0.49.3
+sympy==1.14.0
+timm==0.9.16
+tqdm==4.70.0
+typer==0.23.2
+typing-inspection==0.4.2
+typing_extensions==4.16.0
+urllib3==2.6.3
+uvloop==0.22.1
+watchfiles==1.1.1
+websockets==15.0.1
+zipp==3.23.1
+
+MOBILE APP (npm / Expo)
+-----------------------
+
+Runtime dependencies from mobile_app/package.json:
+expo==57.0.18                 (declared: ~57.0.18)
+expo-image-picker==57.0.14   (declared: ^57.0.14)
+expo-status-bar==57.0.1      (declared: ~57.0.1)
+react==19.2.3                (declared: 19.2.3)
+react-dom==19.2.3            (declared: 19.2.3)
+react-native==0.86.3         (declared: 0.86.3)
+react-native-web==0.21.2     (declared: ^0.21.2)
+
+Development dependencies:
+@types/react==19.2.18        (declared: ~19.2.2)
+typescript==6.0.3            (declared: ~6.0.3)
+
+The mobile_app/package-lock.json contains the complete resolved transitive npm
+ dependency tree, including packages used indirectly by Expo and React Native.
