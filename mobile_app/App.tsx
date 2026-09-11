@@ -120,18 +120,10 @@ export default function App() {
       const fileName = decodeURIComponent(selectedVideo.split('/').pop() || 'face_video.mp4');
       const mimeType = getMimeTypeFromUri(selectedVideo);
       
-      // Create FormData using proper React Native-compatible approach
       const formData = new FormData();
-      
-      // Append using the object format that React Native expects
-      const fileObject = {
-        uri: selectedVideo,
-        name: fileName,
-        type: mimeType,
-      };
-      
-      // Use the correct React Native FormData append method
-      (formData as any).append('file', fileObject);
+      const fileResponse = await fetch(selectedVideo);
+      const fileBlob = await fileResponse.blob();
+      formData.append('file', fileBlob, fileName);
 
       console.log('Uploading to:', `${API_BASE}/predict`);
 
